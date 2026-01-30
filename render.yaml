@@ -1,0 +1,31 @@
+services:
+  # Backend API
+  - type: web
+    name: elisa-backend
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn main:socket_app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEEPSEEK_API_KEY
+        sync: false
+    healthCheckPath: /
+    
+  # Frontend (Static Site)
+  - type: web
+    name: elisa-frontend
+    env: static
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://elisa-backend.onrender.com/*
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
